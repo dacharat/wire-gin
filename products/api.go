@@ -1,19 +1,24 @@
 package products
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/dacharat/wire-gin/utils"
 	"github.com/gin-gonic/gin"
 )
 
-type ProductAPI struct {
-	ProductService ProductService
+type ProviderProductAPI interface {
+	FindAll(c *gin.Context)
+	FindByID(c *gin.Context)
+	Create(c *gin.Context)
 }
 
-func ProvideProductAPI(p ProductService) ProductAPI {
-	return ProductAPI{ProductService: p}
+type ProductAPI struct {
+	ProductService ProviderProductService
+}
+
+func ProvideProductAPI(p ProviderProductService) *ProductAPI {
+	return &ProductAPI{ProductService: p}
 }
 
 func (p *ProductAPI) FindAll(c *gin.Context) {
@@ -21,6 +26,7 @@ func (p *ProductAPI) FindAll(c *gin.Context) {
 
 	if err != nil {
 		utils.Handler(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"products": ToProductDTOs(products)})
@@ -31,6 +37,7 @@ func (p *ProductAPI) FindByID(c *gin.Context) {
 	product, err := p.ProductService.FindByID(id)
 	if err != nil {
 		utils.Handler(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"product": ToProductDTO(*product)})
@@ -40,8 +47,7 @@ func (p *ProductAPI) Create(c *gin.Context) {
 	var productDTO ProductDTO
 	err := c.BindJSON(&productDTO)
 	if err != nil {
-		log.Fatalln(err)
-		c.Status(http.StatusBadRequest)
+		utils.Handler(c, err)
 		return
 	}
 
@@ -49,6 +55,7 @@ func (p *ProductAPI) Create(c *gin.Context) {
 	err = p.ProductService.Save(&product)
 	if err != nil {
 		utils.Handler(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"product": ToProductDTO(product)})

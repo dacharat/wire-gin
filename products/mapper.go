@@ -5,7 +5,7 @@ func ToProduct(productDTO ProductDTO) Product {
 }
 
 func ToProductDTO(product Product) ProductDTO {
-	return ProductDTO{ID: product.ID.String(), Code: product.Code, Price: product.Price}
+	return ProductDTO{ID: product.ID.Hex(), Code: product.Code, Price: product.Price}
 }
 
 func ToProductDTOs(products []Product) []ProductDTO {

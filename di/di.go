@@ -9,11 +9,11 @@ import (
 	"github.com/dacharat/wire-gin/products"
 )
 
-func New() products.ProductAPI {
+func New() *products.ProductAPI {
 	wire.Build(
 		database.Set,
 		products.Set,
 	)
 
-	return products.ProductAPI{}
+	return &products.ProductAPI{}
 }

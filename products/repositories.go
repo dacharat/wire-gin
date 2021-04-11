@@ -7,17 +7,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// type ProductRepositoryInterface interface {
-// 	FindAll() ([]Product, error)
-// 	FindByID(id string) (*Product, error)
-// }
-
-type ProductRepository struct {
-	DB *mongo.Collection
+type ProviderProductRepository interface {
+	FindAll() ([]Product, error)
+	FindByID(id string) (*Product, error)
+	Save(product *Product) error
 }
 
-func ProvideProductRepository(DB *mongo.Database) ProductRepository {
-	return ProductRepository{DB: DB.Collection("wire")}
+type ProductRepository struct {
+	db *mongo.Collection
+}
+
+func ProvideProductRepository(db *mongo.Database) *ProductRepository {
+	return &ProductRepository{db: db.Collection("wire")}
 }
 
 func (p *ProductRepository) FindAll() ([]Product, error) {
@@ -25,7 +26,7 @@ func (p *ProductRepository) FindAll() ([]Product, error) {
 	defer cancel()
 
 	var products []Product
-	cur, err := p.DB.Find(ctx, bson.M{})
+	cur, err := p.db.Find(ctx, bson.M{})
 	if err != nil {
 		return products, err
 	}
@@ -45,7 +46,7 @@ func (p *ProductRepository) FindByID(id string) (*Product, error) {
 	}
 
 	var product *Product
-	err = p.DB.FindOne(ctx, bson.M{"_id": objectID}).Decode(product)
+	err = p.db.FindOne(ctx, bson.M{"_id": objectID}).Decode(&product)
 
 	return product, err
 }
@@ -54,6 +55,8 @@ func (p *ProductRepository) Save(product *Product) error {
 	ctx, cancel := utils.GetContext()
 	defer cancel()
 
-	_, err := p.DB.InsertOne(ctx, product)
+	product.ID = primitive.NewObjectID()
+
+	_, err := p.db.InsertOne(ctx, product)
 	return err
 }

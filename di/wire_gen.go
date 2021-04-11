@@ -12,7 +12,7 @@ import (
 
 // Injectors from di.go:
 
-func New() products.ProductAPI {
+func New() *products.ProductAPI {
 	mongoDatabase := database.NewDatabase()
 	productRepository := products.ProvideProductRepository(mongoDatabase)
 	productService := products.ProvideProductService(productRepository)

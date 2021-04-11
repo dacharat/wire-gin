@@ -15,7 +15,8 @@ func GetContext() (context.Context, context.CancelFunc) {
 func Handler(c *gin.Context, response interface{}) {
 	err, ok := response.(error)
 	if ok {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, response)
 }
